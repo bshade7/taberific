@@ -87,7 +87,7 @@
 		    
     	}
     	$(function(){
-    		$('.tabs').css('zoom',($('#zoom').val())+'%');
+    		
     		/* mouse move then show the navbar */
     		$('#run').click(function(){
     			$('input[value!=""]').each(function(){
@@ -99,6 +99,7 @@
 	    		} else {
 	    			$('.tabs .tab:first').addClass('active')
 	    		}
+	    		$('.tabs').css('zoom',($('#zoom').val())+'%');
     		});
     		$('#add').click(function(){
     			$(this).before('<input type="text" value="" placeholder="type in a url here" />')
