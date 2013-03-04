@@ -92,6 +92,9 @@
     		$('#run').click(function(){
     			$('input[value!=""]').each(function(){
     				load_tab($(this).val());
+    				if( $('#zoom').val()<100 ){
+    					$('iframe:last').contents().find('body').css('zoom',($('#zoom').val())+'%');
+    				}
     			});
     			$('body').addClass('active');
     			if( $('.tabs .tab').length > 1 ){
@@ -99,7 +102,7 @@
 	    		} else {
 	    			$('.tabs .tab:first').addClass('active')
 	    		}
-	    		$('.tabs').css('zoom',($('#zoom').val())+'%');
+	    		
     		});
     		$('#add').click(function(){
     			$(this).before('<input type="text" value="" placeholder="type in a url here" />')
