@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>WireCo Screen Rotator</title>
-    <meta name="viewport" content="width=1920;">
+    <meta name="viewport" content="width=1920">
     <meta name="author" content="ENEngineering">
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/bootstrap-responsive.min.css" rel="stylesheet">
@@ -53,16 +53,6 @@
           <div class="tabs"></div>
           <div class="inputs">
 	          <form>
-		          <div class="row">
-			          <div class="col-11 mb-3">
-                          <label>URL</label>
-				          <input class="form-control" type="text" value="http://example.com" placeholder="type in a url here" />
-			          </div>
-			          <div class="col-1 mb-3">
-                          <label>Delay (s)</label>
-				          <input class="form-control" type="number" value=10 placeholder="type in a delay time (s) here" min=1 max=9999 />
-			          </div>
-		          </div>
 		          <button class="btn btn-primary" type="button" id="add">Add tab</button>
 	          </form>
           </div>
@@ -74,10 +64,21 @@
     <script src="js/jquery-3.3.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script>
-    	var timer = null;
+        /* Declare our timer that will persist */
+        var timer = null;
+        const uri = "api/kpi";
+
+        /* Function to handle loading a tab */
     	function load_tab(url){
     		$('.tabs').append('<iframe class="tab" frameborder="0" height="'+$(window).height()+'" width="'+$(window).width()+'" scrolling="no" seamless="seamless" src="'+url+'"></iframe>');
-    	}
+        }
+
+        /* Function to handle adding a tab to the configure list */
+        function add_tab(url, delay) {
+            $('#add').before('<div class="form-row mb-3"><div class="col-11"><input class="form-control" type="text" value="'+url+'" placeholder="type in a url here" /></div><div class="col-1"><input class="form-control" type="number" value="'+delay+'" placeholder="10" min=1 max=9999 /></div></div>')
+        }
+
+        /* Function to handle rotating the active frame visible */
     	function rotate(){
     		/* Rotate the tabs */
     		var $up = $('.tabs .tab.active'); // get active
@@ -95,31 +96,62 @@
     	}
     	$(function(){
     		
-    		/* mouse move then show the navbar */
+    		/* Click the run tabs button action */
             $('#run').click(function () {
                 /* Set aspect ratio based on setting from menu */
     			viewport = document.querySelector("meta[name=viewport]");
                 viewport.setAttribute('content', $('#aspect').val());
 
                 /* Load up our tabs */
-    			$('input[value!=""]').each(function(){
+                $('input:text').filter(function () {
+                    return this.value != "";
+                }).each(function () {
+                    console.log($(this).val());
+                    console.log($(this).val().length);
     				load_tab($(this).val());
     				
                 });
 
                 /* Hide Setup Menu and Display Tabs */
     			$('body').addClass('active');
-    			if( $('.tabs .tab').length > 1 ){
+                if ($('.tabs .tab').length > 1) {
+                    rotate();
 	    			timer = setInterval(rotate, parseInt($('#time').val()*1000));
 	    		} else {
 	    			$('.tabs .tab:first').addClass('active')
 	    		}
 	    		
-    		});
+            });
+
+            /* Click the add tab button action */
     		$('#add').click(function(){
-    			$(this).before('<div class="row"><div class="col-11 mb-3"><input class="form-control" type="text" value="" placeholder="type in a url here" /></div><div class="col-1 mb-3"><input class="form-control" type="number" value=10 placeholder="type in a delay time (s) here" min=1 max=9999 /></div></div>')
+                add_tab("", "");
     		});
-    	});
+        });
+
+        /* Call load of data upon document ready */
+        $(document).ready(function () {
+            getData();
+        });
+
+        /* Load up the list with preloaded JSON data from .net core api mvc */
+        function getData() {
+            $.ajax({
+                type: "GET",
+                url: uri,
+                cache: false,
+                success: function (data) {
+                    const tBody = $("#inputs");
+
+                    $(tBody).empty();
+
+                    $.each(data, function (key, item) {
+                        add_tab(item.URL, item.Delay);
+                    })
+                }
+            })
+        }
+
     	// Assure full screen.
     	$(window).resize(function(){$('.tabs, .tabs .tab').height($(window).height()).width($(window).width());});
         $('.tabs').height($(window).height()).width($(window).width());
